@@ -1,0 +1,504 @@
+/* ==========================================================================
+   FlowNote - Main Stylesheet
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   CSS Custom Properties
+   -------------------------------------------------------------------------- */
+:root {
+  /* Colors */
+  --color-bg: #ffffff;
+  --color-bg-subtle: #fafafa;
+  --color-border: #e0e0e0;
+  --color-border-light: #f0f0f0;
+  --color-text: #333333;
+  --color-text-muted: #666666;
+  --color-text-subtle: #999999;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-error: #dc2626;
+  --color-error-bg: #fef2f2;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', Consolas, monospace;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+}
+
+/* --------------------------------------------------------------------------
+   Base Reset & Defaults
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg-subtle);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   App Layout
+   -------------------------------------------------------------------------- */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+/* --------------------------------------------------------------------------
+   App Header
+   -------------------------------------------------------------------------- */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-xl);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.app-header__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.app-header__settings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.app-header__settings:hover {
+  color: var(--color-text);
+  background: var(--color-bg-subtle);
+}
+
+/* --------------------------------------------------------------------------
+   App Main Content
+   -------------------------------------------------------------------------- */
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Editor + Results Container
+   -------------------------------------------------------------------------- */
+.editor-results-container {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.editor-wrapper {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.editor {
+  height: 100%;
+}
+
+.editor .cm-editor {
+  height: 100%;
+}
+
+.results-wrapper {
+  width: 120px;
+  min-width: 120px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-left: 1px solid var(--color-border-light);
+  background: var(--color-bg-subtle);
+}
+
+/* --------------------------------------------------------------------------
+   Results Pane
+   -------------------------------------------------------------------------- */
+.results-pane {
+  padding-top: 1rem;
+}
+
+.results-pane__line {
+  height: 24px;
+  line-height: 24px;
+  padding: 0 var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* --------------------------------------------------------------------------
+   Editor Container (legacy, keep for reference)
+   -------------------------------------------------------------------------- */
+.editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-lg);
+  overflow: auto;
+}
+
+/* --------------------------------------------------------------------------
+   Editor Mock (Placeholder for CodeMirror)
+   -------------------------------------------------------------------------- */
+.editor-mock {
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.editor-mock__line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  min-height: 1.6em;
+  padding: 0 var(--spacing-sm);
+}
+
+.editor-mock__text {
+  flex: 1;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* --------------------------------------------------------------------------
+   Result Line
+   -------------------------------------------------------------------------- */
+.result-line {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+  margin-left: var(--spacing-lg);
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.result-line__arrow {
+  color: var(--color-text-subtle);
+}
+
+.result-line__value {
+  color: var(--color-primary);
+}
+
+.result-line--error .result-line__arrow,
+.result-line--error .result-line__value {
+  color: var(--color-error);
+}
+
+/* --------------------------------------------------------------------------
+   Variable Bar
+   -------------------------------------------------------------------------- */
+.variable-bar {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+  flex-shrink: 0;
+}
+
+.variable-bar__header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-xl);
+  text-align: left;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  transition: background var(--transition-fast);
+}
+
+.variable-bar__header:hover {
+  background: var(--color-bg-subtle);
+}
+
+.variable-bar__toggle {
+  display: inline-block;
+  width: 1.25em;
+  text-align: center;
+  transition: transform var(--transition-fast);
+}
+
+.variable-bar__title {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.variable-bar__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-left: var(--spacing-md);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+.variable-bar__summary-item {
+  display: inline-flex;
+  gap: var(--spacing-xs);
+}
+
+.variable-bar__summary-key {
+  color: var(--color-text-muted);
+}
+
+.variable-bar__summary-value {
+  color: var(--color-primary);
+}
+
+.variable-bar__content {
+  padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-md);
+  border-top: 1px solid var(--color-border-light);
+  animation: slideDown var(--transition-normal);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.variable-bar__empty {
+  font-size: 0.875rem;
+  color: var(--color-text-subtle);
+  font-style: italic;
+}
+
+.variable-bar__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.variable-bar__item {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.variable-bar__item-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) 0;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.variable-bar__item-toggle:hover {
+  color: var(--color-primary);
+}
+
+.variable-bar__item-arrow {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  color: var(--color-text-subtle);
+}
+
+.variable-bar__item-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+}
+
+.variable-bar__item-key {
+  color: var(--color-text-muted);
+}
+
+.variable-bar__item-value {
+  color: var(--color-primary);
+}
+
+.variable-bar__item-preview {
+  color: var(--color-text-subtle);
+  margin-left: var(--spacing-xs);
+}
+
+/* --------------------------------------------------------------------------
+   Object View (Nested Object Display)
+   -------------------------------------------------------------------------- */
+.object-view {
+  padding-left: var(--spacing-md);
+}
+
+.object-view__entry {
+  margin: var(--spacing-xs) 0;
+}
+
+.object-view__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) 0;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.object-view__toggle:hover {
+  color: var(--color-primary);
+}
+
+.object-view__arrow {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  color: var(--color-text-subtle);
+}
+
+.object-view__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+}
+
+.object-view__key {
+  color: var(--color-text-muted);
+}
+
+.object-view__value {
+  color: var(--color-primary);
+}
+
+.object-view__preview {
+  color: var(--color-text-subtle);
+  margin-left: var(--spacing-xs);
+}
+
+/* --------------------------------------------------------------------------
+   Mobile Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .app-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .app-header__title {
+    font-size: 1.125rem;
+  }
+
+  .editor-results-container {
+    flex-direction: column;
+  }
+
+  .results-wrapper {
+    width: 100%;
+    min-width: 100%;
+    max-height: 150px;
+    border-left: none;
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .results-pane {
+    display: flex;
+    flex-wrap: wrap;
+    padding: var(--spacing-sm);
+  }
+
+  .results-pane__line {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .editor-container {
+    padding: var(--spacing-md);
+  }
+
+  .editor-mock {
+    font-size: 0.875rem;
+  }
+
+  .editor-mock__line {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .result-line {
+    margin-left: 0;
+    font-size: 0.875rem;
+  }
+
+  .variable-bar__header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .variable-bar__summary {
+    display: none;
+  }
+
+  .variable-bar__content {
+    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Utility Classes
+   -------------------------------------------------------------------------- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

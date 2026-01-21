@@ -1,0 +1,6 @@
+services:
+  flownote:
+    build: .
+    ports:
+      - "4000:80"
+    restart: unless-stopped

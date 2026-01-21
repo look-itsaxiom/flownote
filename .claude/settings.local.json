@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(superpowers:brainstorming)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:notepadcalculator.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(bd create:*)",
+      "Bash(bd dep add:*)",
+      "Bash(bd update:*)",
+      "Bash(npm create:*)",
+      "Bash(npm install)",
+      "Bash(npm run build:*)",
+      "Bash(bd close:*)",
+      "Bash(docker build:*)",
+      "Bash(bd stats:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

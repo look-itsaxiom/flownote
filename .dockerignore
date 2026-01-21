@@ -1,0 +1,7 @@
+node_modules
+dist
+.git
+.beads
+.claude
+*.md
+!README.md
