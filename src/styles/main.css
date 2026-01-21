@@ -6,7 +6,7 @@
    CSS Custom Properties
    -------------------------------------------------------------------------- */
 :root {
-  /* Colors */
+  /* Colors - Light Mode */
   --color-bg: #ffffff;
   --color-bg-subtle: #fafafa;
   --color-border: #e0e0e0;
@@ -36,6 +36,32 @@
 }
 
 /* --------------------------------------------------------------------------
+   Dark Mode Colors
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  --color-bg: #1a1a2e;
+  --color-bg-subtle: #16213e;
+  --color-border: #2a2a4a;
+  --color-border-light: #252545;
+  --color-text: #e4e4e7;
+  --color-text-muted: #a1a1aa;
+  --color-text-subtle: #71717a;
+  --color-primary: #60a5fa;
+  --color-primary-hover: #3b82f6;
+  --color-error: #f87171;
+  --color-error-bg: #450a0a;
+}
+
+/* --------------------------------------------------------------------------
+   Theme Transition
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* --------------------------------------------------------------------------
    Base Reset & Defaults
    -------------------------------------------------------------------------- */
 *,
@@ -50,6 +76,12 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;  /* Prevent body scroll - app handles scrolling */
 }
 
 body {
@@ -77,10 +109,11 @@ button:focus-visible {
    App Layout
    -------------------------------------------------------------------------- */
 .app {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   background: var(--color-bg);
+  overflow: hidden;  /* Prevent body scroll - header/footer stay fixed */
 }
 
 /* --------------------------------------------------------------------------
@@ -118,6 +151,134 @@ button:focus-visible {
   background: var(--color-bg-subtle);
 }
 
+.app-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* --------------------------------------------------------------------------
+   Tab Bar
+   -------------------------------------------------------------------------- */
+.tab-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-xl);
+  background: var(--color-bg-subtle);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.tab-bar__tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex: 1;
+  min-width: 0;
+}
+
+.tab-bar__tab {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  max-width: 200px;
+  min-width: 80px;
+  position: relative;
+  margin-bottom: -1px;
+}
+
+.tab-bar__tab:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.tab-bar__tab--active {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-bottom-color: var(--color-bg);
+  font-weight: 500;
+}
+
+.tab-bar__tab--active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-primary);
+}
+
+.tab-bar__tab-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.tab-bar__input {
+  flex: 1;
+  min-width: 50px;
+  padding: 2px 4px;
+  font-size: 0.875rem;
+  font-family: var(--font-sans);
+  border: 1px solid var(--color-primary);
+  border-radius: 3px;
+  outline: none;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.tab-bar__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  color: var(--color-text-subtle);
+  opacity: 0;
+  transition: opacity var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.tab-bar__tab:hover .tab-bar__close,
+.tab-bar__tab--active .tab-bar__close {
+  opacity: 1;
+}
+
+.tab-bar__close:hover {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.tab-bar__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  color: var(--color-text-muted);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.tab-bar__add:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
 /* --------------------------------------------------------------------------
    App Main Content
    -------------------------------------------------------------------------- */
@@ -126,6 +287,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;  /* Critical: allows flex child to shrink below content size */
 }
 
 /* --------------------------------------------------------------------------
@@ -135,20 +297,32 @@ button:focus-visible {
   flex: 1;
   display: flex;
   overflow: hidden;
+  height: 100%;
+  min-height: 0;  /* Allow container to shrink */
 }
 
 .editor-wrapper {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
+  min-height: 0;  /* Allow wrapper to shrink */
+  overflow: hidden;  /* CodeMirror handles its own scroll */
+  display: flex;
+  flex-direction: column;
 }
 
 .editor {
+  flex: 1;
   height: 100%;
+  min-height: 0;  /* Allow editor to shrink */
+  overflow: hidden;
 }
 
 .editor .cm-editor {
   height: 100%;
+}
+
+.editor .cm-editor .cm-scroller {
+  overflow: auto;  /* Ensure CodeMirror scroller can scroll */
 }
 
 .results-wrapper {
@@ -426,6 +600,11 @@ button:focus-visible {
    Mobile Responsive
    -------------------------------------------------------------------------- */
 @media (max-width: 640px) {
+  .app {
+    height: 100vh;
+    height: 100dvh;  /* Use dynamic viewport height for mobile browsers */
+  }
+
   .app-header {
     padding: var(--spacing-sm) var(--spacing-md);
   }
@@ -434,14 +613,39 @@ button:focus-visible {
     font-size: 1.125rem;
   }
 
+  .tab-bar {
+    padding: var(--spacing-xs) var(--spacing-md);
+  }
+
+  .tab-bar__tab {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.8125rem;
+    min-width: 60px;
+  }
+
+  .tab-bar__close {
+    opacity: 1;  /* Always show close button on mobile */
+  }
+
+  .tab-bar__add {
+    width: 28px;
+    height: 28px;
+  }
+
   .editor-results-container {
     flex-direction: column;
+  }
+
+  .editor-wrapper {
+    flex: 1;
+    min-height: 0;  /* Allow editor to take available space */
   }
 
   .results-wrapper {
     width: 100%;
     min-width: 100%;
     max-height: 150px;
+    flex-shrink: 0;  /* Don't shrink results pane */
     border-left: none;
     border-top: 1px solid var(--color-border-light);
   }
@@ -486,6 +690,244 @@ button:focus-visible {
   .variable-bar__content {
     padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
   }
+}
+
+/* --------------------------------------------------------------------------
+   Global Variables Panel
+   -------------------------------------------------------------------------- */
+.global-variables-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.global-variables-panel {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.global-variables-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.global-variables-panel__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.global-variables-panel__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.global-variables-panel__close:hover {
+  color: var(--color-text);
+  background: var(--color-bg-subtle);
+}
+
+.global-variables-panel__description {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.global-variables-panel__error {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: 0.875rem;
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.global-variables-panel__add {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.global-variables-panel__input {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.global-variables-panel__input:focus {
+  border-color: var(--color-primary);
+}
+
+.global-variables-panel__input--name {
+  width: 140px;
+  flex-shrink: 0;
+}
+
+.global-variables-panel__input--value {
+  flex: 1;
+  min-width: 80px;
+}
+
+.global-variables-panel__input--edit {
+  flex: 1;
+  min-width: 60px;
+}
+
+.global-variables-panel__equals {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.global-variables-panel__btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.875rem;
+  border-radius: 4px;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.global-variables-panel__btn--add {
+  background: var(--color-primary);
+  color: white;
+}
+
+.global-variables-panel__btn--add:hover {
+  background: var(--color-primary-hover);
+}
+
+.global-variables-panel__btn--save {
+  background: var(--color-primary);
+  color: white;
+}
+
+.global-variables-panel__btn--save:hover {
+  background: var(--color-primary-hover);
+}
+
+.global-variables-panel__btn--cancel {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
+.global-variables-panel__btn--cancel:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.global-variables-panel__btn--edit {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
+.global-variables-panel__btn--edit:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.global-variables-panel__btn--delete {
+  background: transparent;
+  color: var(--color-text-subtle);
+}
+
+.global-variables-panel__btn--delete:hover {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.global-variables-panel__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-lg);
+}
+
+.global-variables-panel__empty {
+  padding: var(--spacing-lg);
+  text-align: center;
+  color: var(--color-text-subtle);
+  font-style: italic;
+}
+
+.global-variables-panel__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.global-variables-panel__item:last-child {
+  border-bottom: none;
+}
+
+.global-variables-panel__item-name {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--color-text);
+  font-weight: 500;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.global-variables-panel__item-value {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--color-primary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* --------------------------------------------------------------------------

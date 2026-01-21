@@ -2,43 +2,83 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import Editor from './Editor'
 import ResultsPane from './ResultsPane'
 import VariableBar from './VariableBar'
+import TabBar from './TabBar'
+import GlobalVariablesPanel, { GlobeIcon } from './GlobalVariablesPanel'
 import { evaluateDocument, EvaluationResult } from '../engine/evaluate'
 import { Scope } from '../engine/scope'
-import { loadNote, saveNote } from '../storage/local'
+import {
+  Tab,
+  loadTabs,
+  saveTabs,
+  createTab,
+  updateTabContent,
+  loadGlobalVariables,
+  setGlobalVariable,
+  deleteGlobalVariable,
+} from '../storage/local'
+import { useTheme } from '../hooks/useTheme'
 
-const EXAMPLE_NOTE = `Planning trip to Seattle
+// Sun icon for light mode (click to switch to dark)
+function SunIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  )
+}
 
-flights = 450
-hotel.perNight = 180
-hotel.nights = 4
-hotel.total = hotel.perNight * hotel.nights
+// Moon icon for dark mode (click to switch to light)
+function MoonIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  )
+}
 
-food.budget = 75 * hotel.nights
-activities = 200
-
-total = sum(flights, hotel.total, food.budget, activities)
-
-// Define a tip calculator function
-tip(amount, pct) = amount * pct / 100
-
-dinner = 85
-tip(dinner, 20)
-
-// Use mathjs functions
-sqrt(16) + pow(2, 3)
-`
-
-// Load initial content from localStorage or use example
-function getInitialContent(): string {
-  const stored = loadNote()
-  return stored !== null ? stored : EXAMPLE_NOTE
+// Load initial data from localStorage
+function getInitialData(): { tabs: Tab[]; activeTabId: string } {
+  return loadTabs()
 }
 
 export default function App() {
-  const [content, setContent] = useState(getInitialContent)
+  const [tabs, setTabs] = useState<Tab[]>(() => getInitialData().tabs)
+  const [activeTabId, setActiveTabId] = useState<string>(() => getInitialData().activeTabId)
   const [results, setResults] = useState<EvaluationResult[]>([])
   const [scope, setScope] = useState<Scope>({ variables: {}, functions: {} })
-  const [lineCount, setLineCount] = useState(() => getInitialContent().split('\n').length)
+  const [globalVariables, setGlobalVariables] = useState<Record<string, unknown>>(() => loadGlobalVariables())
+  const [isGlobalPanelOpen, setIsGlobalPanelOpen] = useState(false)
+  const { theme, toggleTheme } = useTheme()
+
+  // Get the active tab
+  const activeTab = tabs.find((tab) => tab.id === activeTabId) || tabs[0]
+  const lineCount = activeTab ? activeTab.content.split('\n').length : 0
 
   // Refs for scroll sync
   const editorContainerRef = useRef<HTMLDivElement>(null)
@@ -49,34 +89,123 @@ export default function App() {
   const saveDebounceRef = useRef<number | null>(null)
 
   // Evaluate on content change (debounced)
-  const handleContentChange = useCallback((newContent: string) => {
-    setContent(newContent)
-    setLineCount(newContent.split('\n').length)
+  const handleContentChange = useCallback(
+    (newContent: string) => {
+      // Update the active tab's content in state
+      setTabs((prevTabs) =>
+        prevTabs.map((tab) =>
+          tab.id === activeTabId
+            ? { ...tab, content: newContent, updatedAt: Date.now() }
+            : tab
+        )
+      )
 
-    // Debounce evaluation (150ms)
-    if (evalDebounceRef.current) {
-      clearTimeout(evalDebounceRef.current)
-    }
-    evalDebounceRef.current = window.setTimeout(() => {
-      const output = evaluateDocument(newContent)
-      setResults(output.results)
-      setScope(output.scope)
-    }, 150)
+      // Debounce evaluation (150ms)
+      if (evalDebounceRef.current) {
+        clearTimeout(evalDebounceRef.current)
+      }
+      evalDebounceRef.current = window.setTimeout(() => {
+        const output = evaluateDocument(newContent, globalVariables)
+        setResults(output.results)
+        setScope(output.scope)
+      }, 150)
 
-    // Debounce save (500ms - slightly longer to reduce writes)
-    if (saveDebounceRef.current) {
-      clearTimeout(saveDebounceRef.current)
-    }
-    saveDebounceRef.current = window.setTimeout(() => {
-      saveNote(newContent)
-    }, 500)
+      // Debounce save (500ms - slightly longer to reduce writes)
+      if (saveDebounceRef.current) {
+        clearTimeout(saveDebounceRef.current)
+      }
+      saveDebounceRef.current = window.setTimeout(() => {
+        updateTabContent(activeTabId, newContent)
+      }, 500)
+    },
+    [activeTabId, globalVariables]
+  )
+
+  // Handle tab selection
+  const handleTabSelect = useCallback((tabId: string) => {
+    setActiveTabId(tabId)
+    // Save the active tab change to localStorage
+    setTabs((prevTabs) => {
+      saveTabs(prevTabs, tabId)
+      return prevTabs
+    })
   }, [])
 
-  // Initial evaluation
+  // Handle adding a new tab
+  const handleTabAdd = useCallback(() => {
+    const newTab = createTab()
+    setTabs((prevTabs) => {
+      const newTabs = [...prevTabs, newTab]
+      saveTabs(newTabs, newTab.id)
+      return newTabs
+    })
+    setActiveTabId(newTab.id)
+  }, [])
+
+  // Handle closing a tab
+  const handleTabClose = useCallback(
+    (tabId: string) => {
+      if (tabs.length <= 1) {
+        return // Cannot close the last tab
+      }
+
+      const tabIndex = tabs.findIndex((tab) => tab.id === tabId)
+      const newTabs = tabs.filter((tab) => tab.id !== tabId)
+
+      let newActiveTabId = activeTabId
+      // If closing the active tab, switch to an adjacent one
+      if (activeTabId === tabId) {
+        const newActiveIndex = tabIndex > 0 ? tabIndex - 1 : 0
+        newActiveTabId = newTabs[newActiveIndex].id
+      }
+
+      setTabs(newTabs)
+      setActiveTabId(newActiveTabId)
+      saveTabs(newTabs, newActiveTabId)
+    },
+    [tabs, activeTabId]
+  )
+
+  // Handle renaming a tab
+  const handleTabRename = useCallback(
+    (tabId: string, newName: string) => {
+      setTabs((prevTabs) => {
+        const newTabs = prevTabs.map((tab) =>
+          tab.id === tabId ? { ...tab, name: newName, updatedAt: Date.now() } : tab
+        )
+        saveTabs(newTabs, activeTabId)
+        return newTabs
+      })
+    },
+    [activeTabId]
+  )
+
+  // Initial evaluation when active tab changes or global variables change
   useEffect(() => {
-    const output = evaluateDocument(content)
-    setResults(output.results)
-    setScope(output.scope)
+    if (activeTab) {
+      const output = evaluateDocument(activeTab.content, globalVariables)
+      setResults(output.results)
+      setScope(output.scope)
+    }
+  }, [activeTabId, globalVariables])
+
+  // Global variables handlers
+  const handleGlobalPanelOpen = useCallback(() => {
+    setIsGlobalPanelOpen(true)
+  }, [])
+
+  const handleGlobalPanelClose = useCallback(() => {
+    setIsGlobalPanelOpen(false)
+  }, [])
+
+  const handleGlobalVariableSave = useCallback((name: string, value: unknown) => {
+    setGlobalVariable(name, value)
+    setGlobalVariables(loadGlobalVariables())
+  }, [])
+
+  const handleGlobalVariableDelete = useCallback((name: string) => {
+    deleteGlobalVariable(name)
+    setGlobalVariables(loadGlobalVariables())
   }, [])
 
   // Sync scroll between editor and results
@@ -113,31 +242,50 @@ export default function App() {
         cmScroller.removeEventListener('scroll', handleEditorScroll)
       }
     }
-  }, [])
+  }, [activeTabId])
 
   return (
     <div className="app">
       <header className="app-header">
         <h1 className="app-header__title">FlowNote</h1>
-        <button className="app-header__settings" aria-label="Settings">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+        <div className="app-header__actions">
+          <button
+            className="app-header__settings"
+            aria-label="Global constants"
+            title="Global constants"
+            onClick={handleGlobalPanelOpen}
           >
-            <circle cx="10" cy="10" r="3" />
-            <path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.5 3.5l1.5 1.5M15 15l1.5 1.5M3.5 16.5l1.5-1.5M15 5l1.5-1.5" />
-          </svg>
-        </button>
+            <GlobeIcon />
+          </button>
+          <button
+            className="app-header__settings"
+            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            onClick={toggleTheme}
+          >
+            {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+          </button>
+        </div>
       </header>
+
+      <TabBar
+        tabs={tabs}
+        activeTabId={activeTabId}
+        onTabSelect={handleTabSelect}
+        onTabAdd={handleTabAdd}
+        onTabClose={handleTabClose}
+        onTabRename={handleTabRename}
+      />
 
       <main className="app-main">
         <div className="editor-results-container">
           <div ref={editorContainerRef} className="editor-wrapper">
-            <Editor initialValue={content} onChange={handleContentChange} />
+            <Editor
+              key={activeTabId}
+              initialValue={activeTab?.content || ''}
+              onChange={handleContentChange}
+              tabId={activeTabId}
+              theme={theme}
+            />
           </div>
           <div ref={resultsContainerRef} className="results-wrapper">
             <ResultsPane results={results} lineCount={lineCount} />
@@ -146,6 +294,14 @@ export default function App() {
       </main>
 
       <VariableBar variables={scope.variables} />
+
+      <GlobalVariablesPanel
+        isOpen={isGlobalPanelOpen}
+        onClose={handleGlobalPanelClose}
+        globalVariables={globalVariables}
+        onSave={handleGlobalVariableSave}
+        onDelete={handleGlobalVariableDelete}
+      />
     </div>
   )
 }

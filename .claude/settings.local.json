@@ -16,7 +16,11 @@
       "Bash(bd close:*)",
       "Bash(docker build:*)",
       "Bash(bd stats:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial FlowNote implementation\n\nA notepad with built-in calculations, variables, and user-defined functions.\n\nFeatures:\n- Freeform text with inline calculation results\n- Variables with dot notation \\(hotel.perNight = 180\\)\n- User-defined functions \\(tip\\(amount, pct\\) = amount * pct / 100\\)\n- Built-in functions: sum, avg, min, max \\(work on objects\\)\n- mathjs integration for scientific functions\n- localStorage persistence\n- Docker deployment support\n\nTech stack: React, TypeScript, Vite, CodeMirror 6, mathjs\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(bd sync:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd tabs, dark mode, global variables, syntax highlighting, and fixed layout\n\nFeatures added:\n- Multiple tabs/documents with isolated scopes\n- Dark mode toggle with system preference detection\n- Global variables \\(constants\\) shared across all tabs\n- Syntax highlighting for FlowNote syntax \\(light/dark\\)\n- Fixed header/footer with scrollable editor content\n\nNew components:\n- TabBar: Tab management with add/close/rename\n- GlobalVariablesPanel: Modal for managing global constants\n- useTheme hook: Theme state management\n\nNew editor extensions:\n- flownote-language.ts: StreamLanguage tokenizer\n- flownote-theme.ts: Light/dark syntax highlighting styles\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }

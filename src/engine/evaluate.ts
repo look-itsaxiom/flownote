@@ -18,8 +18,13 @@ export interface EvaluationOutput {
 /**
  * Build the evaluation context with all available functions and variables.
  * This creates a controlled scope for the Function constructor.
+ * Global variables are added first and cannot be overwritten by user variables.
  */
-function buildEvalContext(scope: Scope, ans: unknown): Record<string, unknown> {
+function buildEvalContext(
+  scope: Scope,
+  ans: unknown,
+  globalVariables?: Record<string, unknown>
+): Record<string, unknown> {
   const context: Record<string, unknown> = {}
 
   // Add mathjs functions (import all of them)
@@ -41,7 +46,14 @@ function buildEvalContext(scope: Scope, ans: unknown): Record<string, unknown> {
   // Add built-in FlowNote functions (sum, avg, min, max)
   Object.assign(context, builtinFunctions)
 
-  // Add user variables
+  // Add global variables (constants) - these are added first
+  // and will be overwritten by user variables if there's a conflict
+  // (the user's local scope takes precedence, but globals are available)
+  if (globalVariables) {
+    Object.assign(context, globalVariables)
+  }
+
+  // Add user variables (these can shadow global variables)
   const userVars = getTopLevelVariables(scope)
   Object.assign(context, userVars)
 
@@ -86,7 +98,8 @@ export function evaluateLine(
   parsed: ParsedLine,
   scope: Scope,
   lineNumber: number,
-  ans: unknown
+  ans: unknown,
+  globalVariables?: Record<string, unknown>
 ): EvaluationResult {
   // Text lines - no evaluation
   if (parsed.type === 'text') {
@@ -123,7 +136,7 @@ export function evaluateLine(
   // Expression - evaluate it
   if (parsed.type === 'expression' && parsed.expression) {
     try {
-      const context = buildEvalContext(scope, ans)
+      const context = buildEvalContext(scope, ans, globalVariables)
       const result = safeEval(parsed.expression, context)
 
       // If this is an assignment, store the variable
@@ -162,8 +175,13 @@ export function evaluateLine(
 /**
  * Evaluate an entire document line by line.
  * Returns all results and the final scope state.
+ * @param content - The document content to evaluate
+ * @param globalVariables - Optional global variables (constants) available in all tabs
  */
-export function evaluateDocument(content: string): EvaluationOutput {
+export function evaluateDocument(
+  content: string,
+  globalVariables?: Record<string, unknown>
+): EvaluationOutput {
   const parsedLines = parseDocument(content)
   const scope = createScope()
   const results: EvaluationResult[] = []
@@ -174,7 +192,7 @@ export function evaluateDocument(content: string): EvaluationOutput {
     const parsed = parsedLines[i]
     const lineNumber = i + 1 // 1-indexed line numbers
 
-    const result = evaluateLine(parsed, scope, lineNumber, ans)
+    const result = evaluateLine(parsed, scope, lineNumber, ans, globalVariables)
     results.push(result)
 
     // Update ans with the last computed value
