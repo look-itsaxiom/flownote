@@ -1,6 +1,6 @@
 services:
-  flownote:
-    build: .
+  frontend:
+    build: ./frontend
     ports:
       - "4000:80"
     restart: unless-stopped
