@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // User document rules
+    match /users/{userId} {
+      // Users can only read/write their own user document
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Notes subcollection rules
+      match /notes/{noteId} {
+        // Allow read if authenticated and accessing own notes
+        allow read: if request.auth != null && request.auth.uid == userId;
+
+        // Allow create if authenticated, accessing own notes, and under note limit
+        allow create: if request.auth != null
+                      && request.auth.uid == userId
+                      && noteCountUnderLimit(userId);
+
+        // Allow update/delete if authenticated and accessing own notes
+        allow update, delete: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Settings subcollection rules
+      match /settings/{doc} {
+        // Users can only read/write their own settings
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Function to check if user is under note limit
+    // Free tier: max 5 notes, Pro tier: unlimited
+    function noteCountUnderLimit(userId) {
+      let user = get(/databases/$(database)/documents/users/$(userId));
+      let tier = user.data.tier;
+      let noteCount = user.data.noteCount;
+      // Pro users have unlimited notes, free users limited to 5
+      return tier == 'pro' || noteCount == null || noteCount < 5;
+    }
+  }
+}

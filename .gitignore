@@ -3,3 +3,9 @@ dist/
 *.log
 .DS_Store
 tsconfig.tsbuildinfo
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log

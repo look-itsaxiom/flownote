@@ -1,0 +1,12 @@
+{
+  "name": "flownote-scripts",
+  "version": "1.0.0",
+  "description": "FlowNote utility scripts",
+  "type": "module",
+  "scripts": {
+    "seed": "node seed-firestore.js"
+  },
+  "dependencies": {
+    "firebase": "^10.7.0"
+  }
+}

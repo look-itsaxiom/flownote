@@ -4,3 +4,32 @@ services:
     ports:
       - "4000:80"
     restart: unless-stopped
+    depends_on:
+      - firebase
+
+  firebase:
+    build:
+      context: .
+      dockerfile: Dockerfile.firebase
+    ports:
+      - "9099:9099"   # Auth emulator
+      - "8080:8080"   # Firestore emulator
+      - "4001:4001"   # Emulator UI
+    volumes:
+      - ./firebase.json:/app/firebase.json:ro
+      - ./firestore.rules:/app/firestore.rules:ro
+      - ./firestore.indexes.json:/app/firestore.indexes.json:ro
+      - firebase-data:/app/data
+    environment:
+      - FIREBASE_EMULATORS_IMPORT_DIRECTORY=/app/data
+      - FIREBASE_EMULATORS_EXPORT_DIRECTORY=/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4001"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  firebase-data:
