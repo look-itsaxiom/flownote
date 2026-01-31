@@ -28,6 +28,8 @@ export interface UseAuthReturn {
   loginWithGoogle: () => Promise<void>
   loginWithGithub: () => Promise<void>
   logout: () => Promise<void>
+  /** Get Firebase ID token for API authentication */
+  getIdToken: () => Promise<string>
 }
 
 function mapFirebaseUser(user: User | null): AuthUser | null {
@@ -97,6 +99,14 @@ export function useAuth(): UseAuthReturn {
     }
   }, [])
 
+  const getIdToken = useCallback(async () => {
+    const currentUser = auth.currentUser
+    if (!currentUser) {
+      throw new Error('User not authenticated')
+    }
+    return currentUser.getIdToken()
+  }, [])
+
   return {
     user,
     loading,
@@ -104,5 +114,6 @@ export function useAuth(): UseAuthReturn {
     loginWithGoogle,
     loginWithGithub,
     logout,
+    getIdToken,
   }
 }

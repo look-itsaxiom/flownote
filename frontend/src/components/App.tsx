@@ -6,6 +6,8 @@ import TabBar from './TabBar'
 import GlobalVariablesPanel, { GlobeIcon } from './GlobalVariablesPanel'
 import { LoginButton, UserMenu } from './auth'
 import { AdBanner } from './ads'
+import { UpgradePrompt } from './billing'
+import { SyncStatus } from './sync'
 import { evaluateDocument, EvaluationResult } from '../engine/evaluate'
 import { Scope } from '../engine/scope'
 import {
@@ -20,6 +22,8 @@ import {
 } from '../storage/local'
 import { useTheme } from '../hooks/useTheme'
 import { useAuth } from '../hooks/useAuth'
+import { useSubscription } from '../hooks/useSubscription'
+import { useSync } from '../hooks/useSync'
 
 // Sun icon for light mode (click to switch to dark)
 function SunIcon() {
@@ -77,8 +81,24 @@ export default function App() {
   const [scope, setScope] = useState<Scope>({ variables: {}, functions: {} })
   const [globalVariables, setGlobalVariables] = useState<Record<string, unknown>>(() => loadGlobalVariables())
   const [isGlobalPanelOpen, setIsGlobalPanelOpen] = useState(false)
+  const [isUpgradePromptDismissed, setIsUpgradePromptDismissed] = useState(false)
   const { theme, toggleTheme } = useTheme()
-  const { user, loading: authLoading, loginWithGoogle, loginWithGithub, logout } = useAuth()
+  const { user, loading: authLoading, loginWithGoogle, loginWithGithub, logout, getIdToken } = useAuth()
+
+  // Subscription state for feature gating
+  const subscription = useSubscription(user, tabs.length)
+
+  // Sync hook for backend synchronization
+  const {
+    status: syncStatus,
+    pendingChanges,
+    queueChange,
+    queueDeletion,
+  } = useSync({
+    user,
+    tabs,
+    onTabsUpdate: setTabs,
+  })
 
   // Get the active tab
   const activeTab = tabs.find((tab) => tab.id === activeTabId) || tabs[0]
@@ -95,14 +115,22 @@ export default function App() {
   // Evaluate on content change (debounced)
   const handleContentChange = useCallback(
     (newContent: string) => {
+      const updatedAt = Date.now()
+
       // Update the active tab's content in state
       setTabs((prevTabs) =>
         prevTabs.map((tab) =>
           tab.id === activeTabId
-            ? { ...tab, content: newContent, updatedAt: Date.now() }
+            ? { ...tab, content: newContent, updatedAt }
             : tab
         )
       )
+
+      // Queue change for sync (the useSync hook handles debouncing)
+      const updatedTab = tabs.find((t) => t.id === activeTabId)
+      if (updatedTab) {
+        queueChange({ ...updatedTab, content: newContent, updatedAt })
+      }
 
       // Debounce evaluation (150ms)
       if (evalDebounceRef.current) {
@@ -122,7 +150,7 @@ export default function App() {
         updateTabContent(activeTabId, newContent)
       }, 500)
     },
-    [activeTabId, globalVariables]
+    [activeTabId, globalVariables, tabs, queueChange]
   )
 
   // Handle tab selection
@@ -137,6 +165,13 @@ export default function App() {
 
   // Handle adding a new tab
   const handleTabAdd = useCallback(() => {
+    // Check if user can create more notes
+    if (!subscription.canCreateNote) {
+      // Show upgrade prompt instead of creating a new tab
+      setIsUpgradePromptDismissed(false)
+      return
+    }
+
     const newTab = createTab()
     setTabs((prevTabs) => {
       const newTabs = [...prevTabs, newTab]
@@ -144,7 +179,7 @@ export default function App() {
       return newTabs
     })
     setActiveTabId(newTab.id)
-  }, [])
+  }, [subscription.canCreateNote])
 
   // Handle closing a tab
   const handleTabClose = useCallback(
@@ -166,8 +201,11 @@ export default function App() {
       setTabs(newTabs)
       setActiveTabId(newActiveTabId)
       saveTabs(newTabs, newActiveTabId)
+
+      // Queue deletion for sync
+      queueDeletion(tabId)
     },
-    [tabs, activeTabId]
+    [tabs, activeTabId, queueDeletion]
   )
 
   // Handle renaming a tab
@@ -268,10 +306,16 @@ export default function App() {
           >
             {theme === 'light' ? <MoonIcon /> : <SunIcon />}
           </button>
+          {/* Sync Status - only shown when logged in */}
+          <SyncStatus
+            status={syncStatus}
+            pendingChanges={pendingChanges}
+            isLoggedIn={!!user}
+          />
           {/* Auth UI */}
           {!authLoading && (
             user ? (
-              <UserMenu user={user} onLogout={logout} />
+              <UserMenu user={user} onLogout={logout} getIdToken={getIdToken} />
             ) : (
               <LoginButton
                 onLoginGoogle={loginWithGoogle}
@@ -319,6 +363,15 @@ export default function App() {
         globalVariables={globalVariables}
         onSave={handleGlobalVariableSave}
         onDelete={handleGlobalVariableDelete}
+      />
+
+      {/* Upgrade Prompt - shown when free user is at note limit */}
+      <UpgradePrompt
+        isVisible={subscription.shouldShowUpgradePrompt && !isUpgradePromptDismissed}
+        noteCount={subscription.noteCount}
+        noteLimit={subscription.noteLimit === Infinity ? 5 : subscription.noteLimit}
+        onClose={() => setIsUpgradePromptDismissed(true)}
+        getIdToken={getIdToken}
       />
     </div>
   )

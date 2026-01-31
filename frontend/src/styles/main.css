@@ -1178,6 +1178,317 @@ button:focus-visible {
 }
 
 /* --------------------------------------------------------------------------
+   Sync Status Component
+   -------------------------------------------------------------------------- */
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.75rem;
+  border-radius: 4px;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sync-status__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+}
+
+.sync-status__text {
+  font-weight: 500;
+}
+
+.sync-status__pending {
+  color: var(--color-text-subtle);
+  font-size: 0.6875rem;
+}
+
+/* Synced state */
+.sync-status--synced {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.1);
+}
+
+[data-theme="dark"] .sync-status--synced {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+}
+
+/* Syncing state */
+.sync-status--syncing {
+  color: var(--color-primary);
+  background: rgba(37, 99, 235, 0.1);
+}
+
+[data-theme="dark"] .sync-status--syncing {
+  background: rgba(96, 165, 250, 0.1);
+}
+
+/* Spinning animation for syncing icon */
+.sync-icon-spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Offline state */
+.sync-status--offline {
+  color: var(--color-text-subtle);
+  background: var(--color-bg-subtle);
+}
+
+/* Error state */
+.sync-status--error {
+  color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+/* Mobile responsive sync status */
+@media (max-width: 640px) {
+  .sync-status__text {
+    display: none;
+  }
+
+  .sync-status__pending {
+    display: none;
+  }
+
+  .sync-status {
+    padding: var(--spacing-xs);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Pro Badge
+   -------------------------------------------------------------------------- */
+.pro-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.pro-badge--small {
+  padding: 1px 4px;
+  font-size: 0.5625rem;
+}
+
+/* --------------------------------------------------------------------------
+   Upgrade Prompt Modal
+   -------------------------------------------------------------------------- */
+.upgrade-prompt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  animation: fadeIn 0.15s ease;
+}
+
+.upgrade-prompt {
+  position: relative;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  max-width: 420px;
+  padding: var(--spacing-xl);
+  animation: slideUp 0.2s ease;
+}
+
+.upgrade-prompt__close {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.upgrade-prompt__close:hover {
+  color: var(--color-text);
+  background: var(--color-bg-subtle);
+}
+
+.upgrade-prompt__header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.upgrade-prompt__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.upgrade-prompt__limit-text {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.upgrade-prompt__benefits {
+  background: var(--color-bg-subtle);
+  border-radius: 8px;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.upgrade-prompt__benefits-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.upgrade-prompt__benefits-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.upgrade-prompt__benefit {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+.upgrade-prompt__benefit svg {
+  color: #eab308;
+  flex-shrink: 0;
+}
+
+.upgrade-prompt__error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
+
+.upgrade-prompt__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.upgrade-prompt__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+}
+
+.upgrade-prompt__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.upgrade-prompt__button--primary {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  color: white;
+}
+
+.upgrade-prompt__button--primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+}
+
+.upgrade-prompt__button--secondary {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
+.upgrade-prompt__button--secondary:hover:not(:disabled) {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+/* --------------------------------------------------------------------------
+   User Menu Enhancements for Billing
+   -------------------------------------------------------------------------- */
+.user-menu__name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.user-menu__item--upgrade {
+  color: #8b5cf6;
+}
+
+.user-menu__item--upgrade:hover {
+  background: rgba(139, 92, 246, 0.1);
+  color: #7c3aed;
+}
+
+[data-theme="dark"] .user-menu__item--upgrade {
+  color: #a78bfa;
+}
+
+[data-theme="dark"] .user-menu__item--upgrade:hover {
+  background: rgba(167, 139, 250, 0.1);
+  color: #c4b5fd;
+}
+
+.user-menu__item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Mobile responsive upgrade prompt */
+@media (max-width: 640px) {
+  .upgrade-prompt {
+    width: 95%;
+    padding: var(--spacing-lg);
+  }
+
+  .upgrade-prompt__title {
+    font-size: 1.25rem;
+  }
+
+  .upgrade-prompt__button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.875rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Utility Classes
    -------------------------------------------------------------------------- */
 .visually-hidden {
