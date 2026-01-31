@@ -931,6 +931,170 @@ button:focus-visible {
 }
 
 /* --------------------------------------------------------------------------
+   Auth Components - Login Button
+   -------------------------------------------------------------------------- */
+.login-button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.login-button__provider {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.login-button__provider:hover:not(:disabled) {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-text-muted);
+}
+
+.login-button__provider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.login-button__provider svg {
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Auth Components - User Menu
+   -------------------------------------------------------------------------- */
+.user-menu {
+  position: relative;
+}
+
+.user-menu__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.user-menu__trigger:hover {
+  border-color: var(--color-border);
+}
+
+.user-menu__trigger:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.user-menu__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-menu__avatar--initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.user-menu__dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: var(--spacing-sm);
+  min-width: 200px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.user-menu__header {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md);
+  gap: var(--spacing-xs);
+}
+
+.user-menu__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-menu__email {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-menu__divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 0;
+}
+
+.user-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-align: left;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.user-menu__item:hover {
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+}
+
+.user-menu__item:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
+.user-menu__item svg {
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
    Utility Classes
    -------------------------------------------------------------------------- */
 .visually-hidden {

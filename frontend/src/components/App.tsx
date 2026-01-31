@@ -4,6 +4,7 @@ import ResultsPane from './ResultsPane'
 import VariableBar from './VariableBar'
 import TabBar from './TabBar'
 import GlobalVariablesPanel, { GlobeIcon } from './GlobalVariablesPanel'
+import { LoginButton, UserMenu } from './auth'
 import { evaluateDocument, EvaluationResult } from '../engine/evaluate'
 import { Scope } from '../engine/scope'
 import {
@@ -17,6 +18,7 @@ import {
   deleteGlobalVariable,
 } from '../storage/local'
 import { useTheme } from '../hooks/useTheme'
+import { useAuth } from '../hooks/useAuth'
 
 // Sun icon for light mode (click to switch to dark)
 function SunIcon() {
@@ -75,6 +77,7 @@ export default function App() {
   const [globalVariables, setGlobalVariables] = useState<Record<string, unknown>>(() => loadGlobalVariables())
   const [isGlobalPanelOpen, setIsGlobalPanelOpen] = useState(false)
   const { theme, toggleTheme } = useTheme()
+  const { user, loading: authLoading, loginWithGoogle, loginWithGithub, logout } = useAuth()
 
   // Get the active tab
   const activeTab = tabs.find((tab) => tab.id === activeTabId) || tabs[0]
@@ -264,6 +267,17 @@ export default function App() {
           >
             {theme === 'light' ? <MoonIcon /> : <SunIcon />}
           </button>
+          {/* Auth UI */}
+          {!authLoading && (
+            user ? (
+              <UserMenu user={user} onLogout={logout} />
+            ) : (
+              <LoginButton
+                onLoginGoogle={loginWithGoogle}
+                onLoginGithub={loginWithGithub}
+              />
+            )
+          )}
         </div>
       </header>
 
