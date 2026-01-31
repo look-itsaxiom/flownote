@@ -9,11 +9,16 @@ import {
 } from 'firebase/auth'
 import { auth } from '@/config/firebase'
 
+/** User subscription tier - determines feature access and ad visibility */
+export type UserTier = 'free' | 'pro'
+
 export interface AuthUser {
   uid: string
   email: string | null
   displayName: string | null
   photoURL: string | null
+  /** User's subscription tier. Defaults to 'free' for new users. */
+  tier: UserTier
 }
 
 export interface UseAuthReturn {
@@ -32,6 +37,10 @@ function mapFirebaseUser(user: User | null): AuthUser | null {
     email: user.email,
     displayName: user.displayName,
     photoURL: user.photoURL,
+    // Default to 'free' tier. In a real implementation, this would be
+    // fetched from the backend or Firebase custom claims.
+    // TODO: Fetch tier from backend when user subscription service is implemented
+    tier: 'free',
   }
 }
 

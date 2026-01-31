@@ -33,16 +33,22 @@ describe('useAuth', () => {
   })
 
   it('returns user object when logged in', async () => {
-    const mockUser = {
+    const mockFirebaseUser = {
       uid: 'test-uid-123',
       email: 'test@example.com',
       displayName: 'Test User',
       photoURL: 'https://example.com/photo.jpg',
     }
 
+    // Expected mapped user (with tier added by mapFirebaseUser)
+    const expectedUser = {
+      ...mockFirebaseUser,
+      tier: 'free',
+    }
+
     // Setup: onAuthStateChanged calls callback with user
     vi.mocked(onAuthStateChanged).mockImplementation((_auth, callback) => {
-      ;(callback as (user: typeof mockUser) => void)(mockUser)
+      ;(callback as (user: typeof mockFirebaseUser) => void)(mockFirebaseUser)
       return vi.fn()
     })
 
@@ -52,7 +58,7 @@ describe('useAuth', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.user).toEqual(mockUser)
+    expect(result.current.user).toEqual(expectedUser)
     expect(result.current.loading).toBe(false)
   })
 
@@ -109,18 +115,24 @@ describe('useAuth', () => {
   })
 
   it('logout clears auth state', async () => {
-    const mockUser = {
+    const mockFirebaseUser = {
       uid: 'test-uid-123',
       email: 'test@example.com',
       displayName: 'Test User',
       photoURL: null,
     }
 
-    let authCallback: ((user: typeof mockUser | null) => void) | null = null
+    // Expected mapped user (with tier added by mapFirebaseUser)
+    const expectedUser = {
+      ...mockFirebaseUser,
+      tier: 'free',
+    }
+
+    let authCallback: ((user: typeof mockFirebaseUser | null) => void) | null = null
 
     vi.mocked(onAuthStateChanged).mockImplementation((_auth, callback) => {
-      authCallback = callback as (user: typeof mockUser | null) => void
-      authCallback(mockUser) // Start with logged in user
+      authCallback = callback as (user: typeof mockFirebaseUser | null) => void
+      authCallback(mockFirebaseUser) // Start with logged in user
       return vi.fn()
     })
 
@@ -135,7 +147,7 @@ describe('useAuth', () => {
 
     // Verify user is logged in initially
     await waitFor(() => {
-      expect(result.current.user).toEqual(mockUser)
+      expect(result.current.user).toEqual(expectedUser)
     })
 
     // Call logout

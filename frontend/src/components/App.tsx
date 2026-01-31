@@ -5,6 +5,7 @@ import VariableBar from './VariableBar'
 import TabBar from './TabBar'
 import GlobalVariablesPanel, { GlobeIcon } from './GlobalVariablesPanel'
 import { LoginButton, UserMenu } from './auth'
+import { AdBanner } from './ads'
 import { evaluateDocument, EvaluationResult } from '../engine/evaluate'
 import { Scope } from '../engine/scope'
 import {
@@ -308,6 +309,9 @@ export default function App() {
       </main>
 
       <VariableBar variables={scope.variables} />
+
+      {/* Ad Banner - only shown for free tier logged-in users */}
+      <AdBanner userTier={user?.tier} showFallback />
 
       <GlobalVariablesPanel
         isOpen={isGlobalPanelOpen}
