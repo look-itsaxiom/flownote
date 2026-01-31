@@ -47,4 +47,28 @@ describe('Config', () => {
     const { config } = await import('../src/config/index.js');
     expect(config.corsOrigin).toBe('http://localhost:5173');
   });
+
+  it('should load FIREBASE_PROJECT_ID from environment variable', async () => {
+    process.env.FIREBASE_PROJECT_ID = 'my-firebase-project';
+    const { config } = await import('../src/config/index.js');
+    expect(config.firebase.projectId).toBe('my-firebase-project');
+  });
+
+  it('should default FIREBASE_PROJECT_ID to flownote-dev', async () => {
+    delete process.env.FIREBASE_PROJECT_ID;
+    const { config } = await import('../src/config/index.js');
+    expect(config.firebase.projectId).toBe('flownote-dev');
+  });
+
+  it('should load FIREBASE_AUTH_EMULATOR_HOST from environment variable', async () => {
+    process.env.FIREBASE_AUTH_EMULATOR_HOST = 'localhost:9099';
+    const { config } = await import('../src/config/index.js');
+    expect(config.firebase.authEmulatorHost).toBe('localhost:9099');
+  });
+
+  it('should default FIREBASE_AUTH_EMULATOR_HOST to undefined', async () => {
+    delete process.env.FIREBASE_AUTH_EMULATOR_HOST;
+    const { config } = await import('../src/config/index.js');
+    expect(config.firebase.authEmulatorHost).toBeUndefined();
+  });
 });

@@ -8,10 +8,16 @@ export interface HealthCheckResponse {
   version?: string;
 }
 
+export interface FirebaseConfig {
+  projectId: string;
+  authEmulatorHost?: string;
+}
+
 export interface AppConfig {
   port: number;
   nodeEnv: string;
   corsOrigin: string;
+  firebase: FirebaseConfig;
 }
 
 // Placeholder types for future implementation

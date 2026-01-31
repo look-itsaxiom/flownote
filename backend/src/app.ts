@@ -4,6 +4,10 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { config } from './config/index.js';
 import healthRouter from './routes/health.js';
+import { initializeFirebase } from './services/firebase.js';
+
+// Initialize Firebase Admin SDK
+initializeFirebase();
 
 /**
  * Create and configure the Express application
