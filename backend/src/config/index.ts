@@ -14,4 +14,15 @@ export const config: AppConfig = {
     // When set, Firebase Admin SDK automatically uses the emulator
     authEmulatorHost: process.env.FIREBASE_AUTH_EMULATOR_HOST || undefined,
   },
+  stripe: {
+    // REQUIRED: Stripe secret key - starts with sk_test_ or sk_live_
+    // Never commit or expose this key
+    secretKey: process.env.STRIPE_SECRET_KEY || '',
+    // REQUIRED: Webhook endpoint secret for signature verification
+    // Get this from Stripe Dashboard > Webhooks
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+    // REQUIRED: The price ID for the $0.99/mo Pro subscription
+    // Create this in Stripe Dashboard > Products
+    priceId: process.env.STRIPE_PRICE_ID || '',
+  },
 };
